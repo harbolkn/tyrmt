@@ -8,9 +8,9 @@ Waterproof for use with swimming or in inclement weather.<br />
 Script will be added later to allow user to easily add this, run it on their own hardware, and go.
 
 ##People
-*Krista Harbold
-*Eve Laurent 
-*Eleni Bourlas
+  * Krista Harbold
+  * Eve Laurent 
+  * Eleni Bourlas
 
 ##Ideas
 
