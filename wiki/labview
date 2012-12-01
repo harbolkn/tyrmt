@@ -1,0 +1,13 @@
+bVIEW Instructions 
+
+1. ### Setting Up Bluetooth Port
+  <p>Open NI-VISA Configuration</p>
+  <p>Using one of the Serial ports, edits it's settings</p>
+  <p>Under binding, edit to be the calling unit device port for the Bluetooth device</p>
+  <p>Save changes to VISA Configuration</p>
+
+2. ### Running LabVIEW Application
+  <p>Run LabVIEW application</p>
+  <p>Select VISA Resource Name via the drop down menu on the user interface</p>
+  </br>
+  <p>Flip the Data switch to begin reading information from the hardware</p>
