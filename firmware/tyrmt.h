@@ -49,7 +49,7 @@ private:
   char *data_file;
   
 public:
-  Tyrmt(int IMUButton = 7, int IMULED = 6, int dataButton = 4, int dataLED = 5);
+  Tyrmt();
 
   void set_state(int state);
   int return_state();

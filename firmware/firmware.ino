@@ -17,31 +17,51 @@
 #include "print.h"
 
 Tyrmt myTracker;
+double timer = 0;
+
 
 void setup() {
-  myTracker = Tyrmt(); 
+  Serial.begin(115200);
+  myTracker = Tyrmt();
+  timer = 0;
 }
 
 
 
 void loop() {
-  //Determine State
-  myTracker.get_state();
-
-  int state = myTracker.return_state();
+  // Check bluetooth for status update
+  Tyrmt.ping();
   
+
+  //Check button state
+  timer = timer + 1;
+  if(myTracker.button_state() == HIGH){
+    if(myTracker.get_button_time() == 0) myTracker.press_button(timer);
+    else if(((timer - myTracker.get_button_timer()) == 1000) && (myTracker.return_statex == IMU)){
+        myTracker.set_state(OFF);
+        myTracker.process_state();
+        myTracker.press_button(0);
+    }
+    else if(((timer - myTracker.get_button_timer()) == 3000) && (myTracker.return_state == OFF)){
+        myTracker.set_state(IMU);
+        myTracker.process_state();
+        myTracker.press_button(0);
+    }
+  }
+
   //Run  
-  if (state == IMU){ //IMU RECORD
+  if (myTracker.return_state() == IMU){ //IMU RECORD
     myTracker.record_data();
   }
-  else if (state == TRANS){//DATA TRANSFER W/ BLUETOOTH
+  else if (myTracker.return_state() == TRANS){//DATA TRANSFER W/ BLUETOOTH
     myTracker.transmit_data();
   }
-  else if (state == OFF){ //DEVICE STANDBY MODE
-    myTracker.stall();
+  else{ 
+    //Do nothing
   }
-  else{
-    myTracker.standby();
-  }
+
+
+  delay(1);
 }
+
 

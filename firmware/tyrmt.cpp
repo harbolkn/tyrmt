@@ -29,20 +29,21 @@ int bluetoothRx= 3;
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
 
-Tyrmt::Tyrmt(int IMUButtonpin /*=7*/, int IMULEDpin /*=6*/, int dataButtonpin /*=4*/, int dataLEDpin /*=5*/){
+Tyrmt::Tyrmt(){
+  //Set LED pins
+  IMULED = 7;
+  TRANSLED = 6;
+  POWERLED = 5;
 
-  //Variable instantiation
-  IMUButton = IMUButtonpin; //Pin for IMU Button
-  IMULED = IMULEDpin; //Pin for IMU LED
-  dataButton = dataButtonpin; //Pin for data Button
-  dataLED = dataLEDpin; //Pin for data LED
+  //Data button location
+  dataButton = 4; //Pin for data Button
 
-  IMUState = OFF;
-  dataState = OFF;
   state = OFF;
   
   chipSelect = 10;
   data_file = "data.csv";
+
+  button_pressed_time = 0;
 
   my3IMU = FreeSixIMU();
 
@@ -67,58 +68,37 @@ Tyrmt::Tyrmt(int IMUButtonpin /*=7*/, int IMULEDpin /*=6*/, int dataButtonpin /*
     sd.errorHalt("opening file for write failed");
 
   bluetooth.begin(9600);
-  Serial.begin(115200);
 
 }
 
 
 void Tyrmt::set_state(int mystate){
   state = mystate;
-
-  if(state == TRANS){
-    IMUState = OFF;
-    dataState = ON;
-  }
-  else if(state == IMU){
-    IMUState = ON;
-    dataState = OFF;
-  }
-  else{
-    IMUState = OFF;
-    dataState = OFF;
-  }
-
   return_state();
 }
 
 int Tyrmt::return_state(){
-  Serial.println("State: " + state);
-
   return state;
 }
 
-int Tyrmt::get_state(){
-  if(digitalRead(dataButton) == HIGH){
-    set_state(TRANS);
-    digitalWrite(IMULED, LOW);
-    digitalWrite(dataLED, HIGH);
-  }
-  else if(digitalRead(IMUButton) == HIGH){
-    set_state(IMU);
-    digitalWrite(IMULED, HIGH);
-    digitalWrite(dataLED, LOW);
-  }
-  else{
-    set_state(OFF);
-    digitalWrite(IMULED, LOW);
-    digitalWrite(dataLED, LOW);
-  }
+int Tyrmt::button_state(){
+  return digitalRead(dataButton);
+}
 
-  return return_state();
+void Tyrmt::process_state(){
+  switch(state){
+    case IMU: digitalWrite(IMULED, HIGH);
+              digitalWrite(TRANSLED, LOW);
+    case TRANS: digitalWrite(IMULED, LOW);
+                digitalWrite(TRANSLED, HIGH);
+    default:  digitalWrite(IMULED, LOW);
+              digitalWrite(TRANSLED, LOW);
+  }
 }
 
 bool Tyrmt::record_data(){
   my3IMU.getQ(q);
+  //Expand this for more information
 
   file.open(data_file, O_CREAT | O_APPEND | O_WRITE);
   filePrintFloatArr(file, q, 4);
@@ -140,23 +120,36 @@ bool Tyrmt::transmit_data(){
     return 1;
   }
   else{
-    Serial.println("Error: File not opened");
     return 0;
   }
 }
 
-bool Tyrmt::stall(){
-  int temp_state = return_state();
-
-  set_state(OFF);
-  delay(500); //Delay half second
-  set_state(temp_state);
-
-  return 1;
-}
-
 bool Tyrmt::standby(){
   //Put Arduino into standby mode
-  return 1;
 }
 
+void Tyrmt::ping(){
+  char ping = bluetooth.read();
+
+  if(ping == STATUS){
+    bluetooth.print((char) return_state());
+  }
+  else if(ping == DATA){
+    if(state == IMU) bluetooth.print(ERROR);
+    else if (state == OFF) {
+      set_state(TRANS);
+    }
+    else //Do nothing
+
+    //This will need to be changed with standby interrupts I think
+  }
+  else //Do nothing
+}
+
+int Tyrmt::get_button_time(){
+  return button_pressed_time;
+}
+
+void Tyrmt::press_button(int timer){
+  button_pressed_time = timer;
+}

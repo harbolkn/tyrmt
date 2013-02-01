@@ -25,10 +25,17 @@ int main(){
     old_input = input;
     input = serial_read();
 
+    //New byte has come from arduino
     if(old_input != input){
+      //Evaluate for status
+      //Option 1: Status
+      //Option 2: Data
       if(input > 0){
-        fp = fopen("/data/data.csv", "a+");
+        //Option 1
 
+
+        //Option 2
+        fp = fopen("/data/data.csv", "a+");
         fprintf(fp, "%c", input);
       }
     }
