@@ -17,21 +17,26 @@
 #define IMU 1
 #define TRANS 2
 
-//General defitions
+//General definitions
+#define ERROR -1
 #define OFF 0 //Off or receive
 #define ON 1 //On or transmit
 
+//Bluetooth Com definitions
+#define STATUS 0
+#define DATA 1
+
 class Tyrmt{
 private:
-  int IMUButton; //Used for turning on/off the IMU
-  int IMULED; //Turns on/off LED based on IMU state
-  int IMUState; //Current state of the IMU (on/off)
+  int IMULED; //IMU ON/OFF
+  int TRANSLED; //TRANSMIT ON/OFF
+  int POWERLED; //POWER ON/OFF
 
   int dataButton; //Turning on/off data transmission
-  int dataLED; //turn on/off LED based on if transmitting data
-  int dataState; //Current state of transmitter (transmit/recieve)
 
   int state; //State of entire system
+
+  float button_pressed_time;
 
   //IMU Data
   //Maybe make this into another file?
@@ -53,12 +58,16 @@ public:
 
   void set_state(int state);
   int return_state();
-  int get_state();
+  int button_state();
+  void process_state();
 
   bool record_data();
   bool transmit_data();
-  bool stall();
-  bool standby();
+
+  void ping();
+
+  int get_button_time();
+  void press_button(int timer);
 };
 
 #endif

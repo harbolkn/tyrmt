@@ -24,9 +24,9 @@
 #include "tyrmt.h"
 #include "print.h"
 
-int bluetoothTx = 2;
-int bluetoothRx= 3;
-SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
+int mybluetoothTx = 2;
+int mybluetoothRx= 3;
+SoftwareSerial bluetooth(mybluetoothTx, mybluetoothRx);
 
 
 Tyrmt::Tyrmt(){
@@ -53,8 +53,9 @@ Tyrmt::Tyrmt(){
   my3IMU.init();
 
   pinMode(IMULED, OUTPUT);
-  pinMode(IMUButton, INPUT);
-  pinMode(dataLED, OUTPUT);
+  pinMode(TRANSLED, OUTPUT);
+  pinMode(POWERLED, OUTPUT);
+
   pinMode(dataButton, INPUT);
   
   pinMode(chipSelect, OUTPUT);
@@ -124,10 +125,6 @@ bool Tyrmt::transmit_data(){
   }
 }
 
-bool Tyrmt::standby(){
-  //Put Arduino into standby mode
-}
-
 void Tyrmt::ping(){
   char ping = bluetooth.read();
 
@@ -140,10 +137,11 @@ void Tyrmt::ping(){
       set_state(TRANS);
     }
     else //Do nothing
+    ;
 
-    //This will need to be changed with standby interrupts I think
   }
   else //Do nothing
+  ;
 }
 
 int Tyrmt::get_button_time(){
