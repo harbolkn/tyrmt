@@ -17,7 +17,11 @@
 #include "print.h"
 
 Tyrmt tracker = Tyrmt();
-double timer = 0;
+int timer = 0;
+
+int oldpress = 0;
+long lastDebounceTime = 0;
+long debounceDelay = 50;
 
 
 void setup() {
@@ -29,40 +33,62 @@ void setup() {
 
 void loop() {
   // Check bluetooth for status update
-  tracker.ping();
+  char ping = tracker.ping();
+
+  //Ping here will either be '0' or '1'
+  //'0' = STATUS
+  //'1' = DATA
+  Serial.println(ping);
   
 
-  //Check button state
+  //Update time
   timer = timer + 1;
-  if(tracker.button_state() == HIGH){
-    if(tracker.get_button_time() == 0) tracker.press_button(timer);
-    else if(((timer - tracker.get_button_time()) == 1000) && (tracker.return_state() == IMU)){
-        //Stop IMU recording
-        tracker.set_state(OFF);
-        tracker.process_state();
-        tracker.press_button(0);
+  Serial.println(timer);
+
+
+  //Check button state
+  //Debounce here
+  int reading = tracker.button_io();
+
+  if(reading != oldpress)
+    lastDebounceTime = millis();
+
+  if((millis() - lastDebounceTime) > debounceDelay){
+    tracker.press_button(reading, timer);
+  }
+
+  //Handle button press
+  //Set state based on amount of time button is pressed
+  if(tracker.button_state() == LOW){
+    //Button pressed for 3 seconds - IMU ON - Turn OFF
+    if((timer - tracker.get_button_time()) == 3000 && tracker.return_state() == IMU){
+      Serial.println("Stop IMU");
+      tracker.set_state(OFF);
+      tracker.process_state();
+      tracker.press_button(HIGH, 0); //SANITY: Button has been pressed now restart counting
     }
-    else if(((timer - tracker.get_button_time()) == 3000) && (tracker.return_state() == OFF)){
-        //Start IMU recording
-        tracker.set_state(IMU);
-        tracker.process_state();
-        tracker.press_button(0);
+
+    //Button pressed for 3 seconds - IMU OFF - Turn ON
+    else if((timer - tracker.get_button_time()) == 3000 && tracker.return_state() == OFF) {
+        //Serial.println("Start IMU");
+        //tracker.set_state(IMU);
+        //tracker.process_state();
+        //tracker.press_button(HIGH, 0);
     }
   }
 
-  //Run  
+
+  //LEDs and state set
+  //Run process based on state
   if (tracker.return_state() == IMU){ //IMU RECORD
     tracker.record_data();
   }
   else if (tracker.return_state() == TRANS){//DATA TRANSFER W/ BLUETOOTH
     tracker.transmit_data();
   }
-  else{ 
-    ;//Do nothing
-  }
 
 
-  delay(1);
+  oldpress = tracker.button_state();
 }
 
 

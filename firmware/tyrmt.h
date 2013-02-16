@@ -33,6 +33,7 @@ private:
   int POWERLED; //POWER ON/OFF
 
   int dataButton; //Turning on/off data transmission
+  int button_value;
 
   int state; //State of entire system
 
@@ -58,16 +59,17 @@ public:
 
   void set_state(int state);
   int return_state();
-  int button_state();
   void process_state();
 
   bool record_data();
   bool transmit_data();
 
-  void ping();
+  char ping();
 
+  int button_io();
+  int button_state();
   int get_button_time();
-  void press_button(int timer);
+  void press_button(int state, int timer);
 };
 
 #endif
