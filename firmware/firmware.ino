@@ -1,94 +1,73 @@
 /*
- * firmware.ino
+ *  firmware.ino
  *
- * arduino program for tyrmt system
+ *  Basic firmware program for Tyrmt hardware module
  */
-
-#include <SdFat.h>
-#include <SdFatUtil.h>
-#include <SdVolume.h>
+ 
 #include <FreeSixIMU.h>
 #include <FIMU_ADXL345.h>
 #include <FIMU_ITG3200.h>
-#include <SoftwareSerial.h>
+#include <SD.h>
 #include <Wire.h>
+#include <SoftwareSerial.h>
+#include "Arduino.h"
 
-#include "tyrmt.h"
-#include "print.h"
+#include "hardware.h"
+#include "button.h"
+#include "device.h"
+#include "record.h"
+#include "server.h"
 
-Tyrmt tracker = Tyrmt();
-int timer = 0;
+SoftwareSerial bluetooth(2, 3);
+long timer = 0;
 
-int oldpress = 0;
-long lastDebounceTime = 0;
-long debounceDelay = 50;
-
-
-void setup() {
-  Serial.begin(115200);
-  timer = 0;
-}
-
-
-
-void loop() {
-  // Check bluetooth for status update
-  char ping = tracker.ping();
-
-  //Ping here will either be '0' or '1'
-  //'0' = STATUS
-  //'1' = DATA
-  Serial.println(ping);
+void setup(){
+  //Serial = SoftwareSerial(TX, RX, false);
   
-
-  //Update time
-  timer = timer + 1;
-  Serial.println(timer);
-
-
-  //Check button state
-  //Debounce here
-  int reading = tracker.button_io();
-
-  if(reading != oldpress)
-    lastDebounceTime = millis();
-
-  if((millis() - lastDebounceTime) > debounceDelay){
-    tracker.press_button(reading, timer);
-  }
-
-  //Handle button press
-  //Set state based on amount of time button is pressed
-  if(tracker.button_state() == LOW){
-    //Button pressed for 3 seconds - IMU ON - Turn OFF
-    if((timer - tracker.get_button_time()) == 3000 && tracker.return_state() == IMU){
-      Serial.println("Stop IMU");
-      tracker.set_state(OFF);
-      tracker.process_state();
-      tracker.press_button(HIGH, 0); //SANITY: Button has been pressed now restart counting
-    }
-
-    //Button pressed for 3 seconds - IMU OFF - Turn ON
-    else if((timer - tracker.get_button_time()) == 3000 && tracker.return_state() == OFF) {
-        //Serial.println("Start IMU");
-        //tracker.set_state(IMU);
-        //tracker.process_state();
-        //tracker.press_button(HIGH, 0);
-    }
-  }
-
-
-  //LEDs and state set
-  //Run process based on state
-  if (tracker.return_state() == IMU){ //IMU RECORD
-    tracker.record_data();
-  }
-  else if (tracker.return_state() == TRANS){//DATA TRANSFER W/ BLUETOOTH
-    tracker.transmit_data();
-  }
-
-
-  oldpress = tracker.button_state();
+  Serial.begin(115200);
+  
+  //Hardware initializations
+  hardware_init();
+  hardware_setup();
+  
+  //Button initalization
+  button_init();
+  
+  //Device initalization
+  device_init();
+  record_init();
+  
+  //Power is on
+  digitalWrite(hardware.powerLED, HIGH);
 }
 
+void loop(){
+  //Ping
+  ping();
+  
+  //Button
+  read_button();
+  
+  switch(button.button_state){
+    case ON: record_toggle(timer); break;
+    case OFF: break;
+    default: break;
+  }
+  
+  //Run
+  switch(device.state){
+    case STANDBY: digitalWrite(hardware.recordLED, LOW);
+      digitalWrite(hardware.transLED, LOW);
+      break;
+    case IMU: digitalWrite(hardware.recordLED, HIGH); 
+      record_data();
+      break;
+    case TRANS: digitalWrite(hardware.transLED, HIGH); 
+      transmit_data();
+      break;
+  }
+  
+  //Iterator
+  timer++;
+}
 
