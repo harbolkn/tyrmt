@@ -21,6 +21,7 @@ typedef struct{
   int state;
   FreeSixIMU my3IMU;
   float q[4];
+  int raw[6];
 }device_t;
 extern device_t device;
 

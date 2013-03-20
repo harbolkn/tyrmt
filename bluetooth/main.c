@@ -7,50 +7,89 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "serial.h"
 
-void delay();
 
-int main(){
+
+int main(int argc, char *argv[]){
   //Setup serial interface
-  serial_open();
+  char *port_name = argv[1];
+  serial_open(port_name);
   serial_init();
+
+  printf("Serial setup complete\n");
+  serial_write(' ');
+
+  int first_loop = 1;
+  int get_file_name = 0;
+  int record_file = 0;
+  char *file_name = (char *)malloc(sizeof(char)*10);
+  int i=0;
   
 
   char input, old_input;
   FILE *fp;
 
   while(1){
-    old_input = input;
     input = serial_read();
 
-    //New byte has come from arduino
-    if(old_input != input){
-      //Evaluate for status
-      //Option 1: Status
-      //Option 2: Data
-      if(input > 0){
-        //Option 1
+    if((input >= 'A' && input <='z') || (input == ' ') || (input == '\n') ||(input == '.') || (input >= '0' && input<='9') || (input == ',')){
+      if(first_loop == 1){
+        printf("%c", input);
+      }
 
+      //Acquire file name
+      else if(get_file_name == 1){
+        if(input == '\n'){
+          get_file_name = 0;
+          record_file = 1;
+          printf("File name: %s \n", file_name);
+        }
+        else{
+          file_name[i] = input;
+          i++;
+        }
+      }
 
-        //Option 2
-        fp = fopen("/data/data.csv", "a+");
-        fprintf(fp, "%c", input);
+      //Record file
+      else if(record_file == 1){
+        i=0; //Should have just gotten file name
+
+        fp = fopen(file_name, "a+");
+
+        if(fp == NULL) printf("\nERROR: %s failed to open\n", file_name);
+        else{
+          fprintf(fp, "%c", input);
+        
+          fclose(fp);
+        }
+      }
+      
+      //Determine New File
+      if(input == '\n' && old_input == '\n'){
+        record_file = 0;
+        printf("%c", input);
+        get_file_name = 1;
+      }
+
+      old_input = input;
+    }
+    else{
+      if(first_loop == 1){
+        serial_write('2');
+        first_loop = 0;
+      }
+      else{
+        //break;
       }
     }
 
-    if(input == -1) break;
+    
   }
 
   serial_close();
   return 0;
 }
 
-void delay(){
-  int c=1, d=1;
-
-  for(c=1; c<=32767; c++){
-    for(d=1; d<=32767; d++){}
-  }
-}

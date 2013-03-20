@@ -16,5 +16,6 @@ void ping();
 
 void transmit_data();
 void reset_device();
+void printDirectory(File dir, int numTabs);
 
 #endif

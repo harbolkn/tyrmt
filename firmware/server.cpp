@@ -39,52 +39,9 @@ void ping(){
 
 void transmit_data(){
   File root = SD.open("/");
-  File entry = root.openNextFile();
+  root.seek(0);
   
-  if(!entry){
-    Serial.println("No files present.");
-    device.state = STANDBY;
-    return;
-  }
-  
-  bool wait = 0;
-  
-  while(entry){
-    
-    if(wait == 0){
-      Serial.print("Open/Delete File: ");
-      Serial.print(entry.name());
-      Serial.print("? (Y/N/D) ");
-    }
-    
-    char response = Serial.read();
-    
-    if(response == 'Y' || response == 'y'){
-      Serial.println("");
-      File dataFile = SD.open(entry.name());
-      
-      while(dataFile.available())
-        Serial.write(dataFile.read());
-        
-      dataFile.close();
-      entry = root.openNextFile();
-      wait = 0;
-    }
-    else if(response == 'N' || response == 'n'){
-      Serial.println("");
-      entry = root.openNextFile();
-      wait = 0;
-    }
-    else if(response == 'D' || response == 'd'){
-      Serial.println("");
-      SD.remove (entry.name());
-      entry = root.openNextFile();
-      wait = 0;
-    }
-    else{
-      wait = 1;
-    }
-  }
+  printDirectory(root, 0);
   
   root.rewindDirectory();
   root.close();
@@ -94,14 +51,56 @@ void transmit_data(){
 
 void reset_device(){
   File root = SD.open("/");
+  root.seek(0);
+    
   File entry = root.openNextFile();
   
   while(entry){
     SD.remove(entry.name()); 
+    if(entry){
+      entry.close();
+    }
+    
+    entry.close();  
     entry = root.openNextFile();
   }
   
+  entry.close();
   root.rewindDirectory();
   root.close();
   Serial.println("All files cleared.");
 }
+
+void printDirectory(File dir, int numTabs){
+  dir.seek(0);
+  
+  while(true){
+    File entry = dir.openNextFile();
+    if(!entry){
+      entry.close();
+      dir.rewindDirectory();
+      break;
+    }
+    for(uint8_t i=0; i<numTabs; i++){
+      Serial.print('\t');
+    }
+    
+    if(entry.isDirectory()){
+    }
+    else{
+      //Print directory
+      Serial.println("");
+      Serial.println(entry.name());
+     
+      File dataFile = SD.open(entry.name());
+      
+      while(dataFile.available())
+        Serial.write(dataFile.read());
+        
+      dataFile.close();
+      SD.remove(entry.name());      
+    }
+    entry.close();
+  }
+}
+

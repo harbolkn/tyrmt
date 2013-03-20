@@ -24,7 +24,7 @@ long timer = 0;
 void setup(){
   //Serial = SoftwareSerial(TX, RX, false);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   //Hardware initializations
   hardware_init();

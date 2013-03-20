@@ -27,6 +27,7 @@ void record_init(){
 
 void record_data(){
   device.my3IMU.getQ(device.q);
+  device.my3IMU.getRawValues(device.raw);
   
   char file[record.fileName.length()+1];
   record.fileName.toCharArray(file, sizeof(file));
@@ -38,9 +39,12 @@ void record_data(){
   }
   else{
     filePrintFloatArr(device.q, 4);
+    filePrintFloatArr((float *)device.raw, 6);
     record.dataFile.println("");
     record.dataFile.close();
   }
+  
+  delay(10);
 }
 
 void filePrintFloatArr(float *arr, int length){

@@ -53,7 +53,7 @@ void serial_init(){
   config.c_cc[VTIME] = 0;
 
   //Communication speed (simple version, using te predefined constants)
-  if(cfsetispeed(&config, B9600) < 0 || cfsetospeed(&config, B9600) < 0)
+  if(cfsetispeed(&config, B115200) < 0 || cfsetospeed(&config, B9600) < 0)
     printf("Error: Baud Rate set failure\n");
 
   //Apply configuration
@@ -61,14 +61,14 @@ void serial_init(){
     printf("Error: Attributes not set\n");
 }
 
-int serial_open(){
-  port.fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
+int serial_open(char *port_name){
+  port.fd = open(port_name, O_RDWR | O_NOCTTY | O_NDELAY);
 
   if (port.fd == -1){
-    printf("Error: Could not open ttyACM0 port\n");
+    printf("Error: Could not open %s port\n", port_name);
   }
   else{
-    printf("Serial port opened successfully\n");
+    printf("Serial port %s opened successfully\n", port_name);
     fcntl(port.fd, F_SETFL, 0);
   }
 

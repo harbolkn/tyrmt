@@ -14,7 +14,7 @@ extern port_t port;
 
 void serial_init();
 
-int serial_open();
+int serial_open(char *port_name);
 
 void serial_write(unsigned char data);
 
