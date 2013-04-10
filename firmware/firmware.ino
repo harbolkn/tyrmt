@@ -9,7 +9,6 @@
 #include <FIMU_ITG3200.h>
 #include <SD.h>
 #include <Wire.h>
-#include <SoftwareSerial.h>
 #include "Arduino.h"
 
 #include "hardware.h"
@@ -18,7 +17,6 @@
 #include "record.h"
 #include "server.h"
 
-SoftwareSerial bluetooth(2, 3);
 long timer = 0;
 
 void setup(){
@@ -38,7 +36,9 @@ void setup(){
   record_init();
   
   //Power is on
-  digitalWrite(hardware.powerLED, HIGH);
+  digitalWrite(hardware.led, HIGH);
+  
+  Serial.println("Card Initialized");
 }
 
 void loop(){
@@ -56,13 +56,15 @@ void loop(){
   
   //Run
   switch(device.state){
-    case STANDBY: digitalWrite(hardware.recordLED, LOW);
-      digitalWrite(hardware.transLED, LOW);
+    case STANDBY: 
+      digitalWrite(hardware.led, HIGH);
       break;
-    case IMU: digitalWrite(hardware.recordLED, HIGH); 
+    case IMU:
+      led_blink();
       record_data();
       break;
-    case TRANS: digitalWrite(hardware.transLED, HIGH); 
+    case TRANS:
+      digitalWrite(hardware.led, HIGH);
       transmit_data();
       break;
   }

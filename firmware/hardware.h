@@ -10,9 +10,7 @@
 
 typedef struct{
   int buttonPin;
-  int powerLED;
-  int transLED;
-  int recordLED;
+  int led;
 
   int chipSelect;
 }hardware_t;
@@ -20,5 +18,6 @@ extern hardware_t hardware;
 
 void hardware_init();
 void hardware_setup();
+void led_blink();
 
 #endif

@@ -45,8 +45,10 @@ void transmit_data(){
   
   root.rewindDirectory();
   root.close();
-  Serial.println("Done transmitting files");
+  //Serial.println("Done transmitting files");
   device.state = STANDBY;
+  
+  Serial.print(ENDTRANS);
 }
 
 void reset_device(){
@@ -68,7 +70,7 @@ void reset_device(){
   entry.close();
   root.rewindDirectory();
   root.close();
-  Serial.println("All files cleared.");
+  //Serial.println("All files cleared.");
 }
 
 void printDirectory(File dir, int numTabs){

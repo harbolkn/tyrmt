@@ -18,11 +18,14 @@ record_t record;
 
 void record_init(){
   if(!SD.begin(hardware.chipSelect)){
-    Serial.println("Card failed, or not present");
+    //Serial.println("Card failed, or not present");
     return;
+    
   }
-  else
-    Serial.println("Card initialized.");
+  else{
+    //Serial.println("Card initialized.");
+    ;
+  }
 }
 
 void record_data(){
@@ -35,7 +38,7 @@ void record_data(){
   record.dataFile = SD.open(file, FILE_WRITE);
 
   if(!record.dataFile){
-    Serial.println("Error opening file");
+    //Serial.println("Error opening file");
   }
   else{
     filePrintFloatArr(device.q, 4);

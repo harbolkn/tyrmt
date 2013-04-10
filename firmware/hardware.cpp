@@ -7,14 +7,13 @@
 
 #include "hardware.h"
 #include "Arduino.h"
+#include "device.h"
 
 hardware_t hardware;
 
 void hardware_init(){
   hardware.buttonPin = 4;
-  hardware.powerLED = 5;
-  hardware.transLED = 6;
-  hardware.recordLED = 7;
+  hardware.led=5;
 
   hardware.chipSelect = 10;
 }
@@ -23,9 +22,14 @@ void hardware_setup(){
   pinMode(hardware.buttonPin, INPUT);
   digitalWrite(hardware.buttonPin, HIGH); //Pull button HIGH
 
-  pinMode(hardware.powerLED, OUTPUT);
-  pinMode(hardware.transLED, OUTPUT);
-  pinMode(hardware.recordLED, OUTPUT);
+  pinMode(hardware.led, OUTPUT);
 
   pinMode(hardware.chipSelect, OUTPUT);
+}
+
+void led_blink(){
+    digitalWrite(hardware.led, HIGH);
+    delay(250);
+    digitalWrite(hardware.led, LOW);
+    delay(250);
 }

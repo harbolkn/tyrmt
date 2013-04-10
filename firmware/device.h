@@ -7,15 +7,17 @@
 #ifndef device_h
 #define device_h
 
-#include <SoftwareSerial.h>
 #include <FreeSixIMU.h>
 #include <FIMU_ADXL345.h>
 #include <FIMU_ITG3200.h>
 #include <Wire.h>
 
+
 #define STANDBY 0
 #define IMU 1
 #define TRANS 2
+
+
 
 typedef struct{
   int state;

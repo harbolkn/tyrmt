@@ -11,6 +11,7 @@
 #define STATUS 1
 #define DATA 2
 #define RESET 3
+#define ENDTRANS 'Z'
 
 void ping();
 
